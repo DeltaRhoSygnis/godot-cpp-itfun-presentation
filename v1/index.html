@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V1 • C++ : Godot Engine — Case Analysis | Group 1-C</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/archivo-black@latest/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/space-grotesk@latest/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/space-grotesk@latest/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/space-mono@latest/700.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #FDF4E3;
+    --paper: #FFFFFF;
+    --ink: #1B1820;
+    --muted: #4A4550;
+    --yellow: #FFD02F;
+    --pink: #FF90E8;
+    --cyan: #9FF3FF;
+    --purple: #C9A7FF;
+    --orange: #FFA453;
+    --green: #8FE388;
+    --red: #FF6B57;
+    --blue: #82B4FF;
+    --bd: 3px solid var(--ink);
+    --sh: 7px 7px 0 var(--ink);
+  }
+
+  html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+
+  body {
+    font-family: 'Space Grotesk', 'Trebuchet MS', system-ui, sans-serif;
+    background: var(--bg);
+    background-image: radial-gradient(rgba(27,24,32,.08) 1.5px, transparent 1.6px);
+    background-size: 26px 26px;
+    color: var(--ink);
+    font-size: 17.5px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--ink); color: var(--yellow); }
+  :focus-visible { outline: 3px dashed var(--ink); outline-offset: 3px; }
+
+  h1, h2, h3 { font-family: 'Archivo Black', 'Arial Black', sans-serif; text-transform: uppercase; line-height: 1.05; }
+  img { max-width: 100%; display: block; }
+
+  /* ============ TOP BAR ============ */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 78px;
+    background: var(--bg); border-bottom: var(--bd);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 clamp(16px, 4vw, 40px);
+    z-index: 1000; transition: transform .35s ease;
+  }
+  .topbar.hide { transform: translateY(-103%); }
+  .logo {
+    font-family: 'Archivo Black'; font-size: 1.05rem; text-transform: uppercase;
+    background: var(--paper); border: var(--bd); box-shadow: 4px 4px 0 var(--ink);
+    padding: 9px 16px; display: inline-flex; gap: 10px; align-items: center;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo .dot { width: 13px; height: 13px; background: var(--pink); border: 2.5px solid var(--ink); border-radius: 50%; }
+  .logo:hover { background: var(--yellow); }
+
+  .burger {
+    width: 56px; height: 56px; background: var(--yellow);
+    border: var(--bd); box-shadow: 4px 4px 0 var(--ink);
+    cursor: pointer; display: grid; place-items: center;
+    transition: transform .15s, box-shadow .15s, background .2s;
+  }
+  .burger:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink); }
+  .burger:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+  .burger .bars { display: flex; flex-direction: column; gap: 5px; width: 26px; }
+  .burger .bars span { display: block; height: 3px; background: var(--ink); transition: transform .3s ease, opacity .2s ease; }
+  .burger.open { background: var(--pink); }
+  .burger.open .bars span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+  .burger.open .bars span:nth-child(2) { opacity: 0; }
+  .burger.open .bars span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+  .progress { position: absolute; left: 0; bottom: 0; height: 6px; background: var(--pink); width: 0; z-index: 5; }
+
+  /* ============ NAV PANEL ============ */
+  .nav-panel {
+    position: fixed; top: 78px; left: 0; right: 0;
+    background: var(--bg); border-bottom: var(--bd);
+    z-index: 998; padding: 30px clamp(16px, 4vw, 40px) 38px;
+    transform: translateY(-115%); visibility: hidden;
+    transition: transform .45s cubic-bezier(.22, 1, .36, 1), visibility 0s .45s;
+    max-height: calc(100vh - 78px); overflow-y: auto;
+  }
+  .nav-panel.open { transform: translateY(0); visibility: visible; transition: transform .45s cubic-bezier(.22, 1, .36, 1); }
+  .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; max-width: 1240px; margin: 0 auto; }
+  .menu-link {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--paper); border: var(--bd); box-shadow: 5px 5px 0 var(--ink);
+    padding: 15px 16px; text-decoration: none; color: var(--ink);
+    font-family: 'Archivo Black'; text-transform: uppercase; font-size: .88rem;
+    transition: transform .15s, box-shadow .15s, background .2s;
+  }
+  .menu-link .num { font-family: 'Space Mono', monospace; font-weight: 700; background: var(--ink); color: var(--bg); padding: 2px 9px; font-size: .8rem; }
+  .menu-link:hover { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 var(--ink); }
+  .menu-link.active { background: var(--yellow); }
+  .menu-link:nth-child(4n+1):hover { background: var(--cyan); }
+  .menu-link:nth-child(4n+2):hover { background: var(--pink); }
+  .menu-link:nth-child(4n+3):hover { background: var(--yellow); }
+  .menu-link:nth-child(4n+4):hover { background: var(--purple); }
+  .nav-note { max-width: 1240px; margin: 18px auto 0; font-size: .9rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+  .backdrop { position: fixed; inset: 0; background: rgba(27,24,32,.28); z-index: 997; opacity: 0; visibility: hidden; transition: opacity .3s, visibility 0s .3s; }
+  .backdrop.show { opacity: 1; visibility: visible; transition: opacity .3s; }
+
+  /* ============ HERO ============ */
+  .hero {
+    max-width: 1280px; margin: 0 auto;
+    padding: 130px clamp(16px, 5vw, 60px) 70px;
+    display: grid; grid-template-columns: 1.15fr .85fr; gap: 50px; align-items: center;
+    position: relative;
+  }
+  .kicker {
+    display: inline-block; background: var(--cyan); border: var(--bd); box-shadow: 4px 4px 0 var(--ink);
+    padding: 8px 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: .85rem;
+    transform: rotate(-1.5deg); margin-bottom: 26px;
+  }
+  .hero h1 { font-size: clamp(3rem, 8.5vw, 7rem); letter-spacing: -.01em; margin-bottom: 26px; }
+  .title-sticker {
+    display: inline-block; background: var(--yellow); border: var(--bd); box-shadow: 8px 8px 0 var(--ink);
+    padding: 8px 22px 12px; transform: rotate(-1.5deg);
+  }
+  .lead { font-size: clamp(1.1rem, 2vw, 1.35rem); max-width: 880px; margin-bottom: 26px; color: var(--muted); font-weight: 500; }
+  .label { display: block; font-family: 'Space Mono', monospace; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: .8rem; margin-bottom: 12px; }
+  .presenters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 26px; }
+  .ptag { background: var(--paper); border: var(--bd); box-shadow: 4px 4px 0 var(--ink); padding: 8px 15px; font-weight: 700; font-size: .95rem; }
+  .ptag:nth-child(6n+1) { background: var(--pink); }
+  .ptag:nth-child(6n+2) { background: var(--cyan); }
+  .ptag:nth-child(6n+3) { background: var(--yellow); }
+  .ptag:nth-child(6n+4) { background: var(--purple); }
+  .ptag:nth-child(6n+5) { background: var(--green); }
+  .ptag:nth-child(6n+6) { background: var(--orange); }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; border: 2.5px solid var(--ink); padding: 6px 13px; font-weight: 700; font-size: .85rem; background: var(--paper); box-shadow: 3px 3px 0 var(--ink); text-decoration: none; color: var(--ink); }
+  .c-yellow { background: var(--yellow); } .c-pink { background: var(--pink); } .c-cyan { background: var(--cyan); }
+  .c-purple { background: var(--purple); } .c-green { background: var(--green); } .c-orange { background: var(--orange); }
+  .c-red { background: var(--red); color: #fff; } .c-blue { background: var(--blue); }
+
+  .hero-art { position: relative; }
+  .hero-art img { width: 100%; border: var(--bd); box-shadow: 12px 12px 0 var(--ink); background: var(--paper); transform: rotate(2deg); }
+  .badge { position: absolute; border: var(--bd); box-shadow: 5px 5px 0 var(--ink); padding: 10px 16px; font-family: 'Archivo Black'; text-transform: uppercase; font-size: .8rem; }
+  .b1 { top: -20px; left: -16px; background: var(--cyan); transform: rotate(-6deg); }
+  .b2 { bottom: -18px; right: -10px; background: var(--pink); transform: rotate(4deg); }
+
+  .star { position: absolute; width: 58px; animation: floaty 5.5s ease-in-out infinite; z-index: -1; }
+  .s1 { top: 100px; right: 6%; }
+  .s2 { bottom: 40px; left: 3%; animation-delay: 1.2s; width: 44px; }
+  @keyframes floaty { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-14px) rotate(10deg); } }
+
+  /* ============ MARQUEE ============ */
+  .marquee { border-top: var(--bd); border-bottom: var(--bd); background: var(--yellow); overflow: hidden; padding: 14px 0; }
+  .marquee.m-pink { background: var(--pink); }
+  .marquee-track { display: flex; width: max-content; animation: scrollX 26s linear infinite; }
+  .marquee-group { display: flex; align-items: center; white-space: nowrap; }
+  .marquee-group span { font-family: 'Archivo Black'; text-transform: uppercase; font-size: 1.05rem; padding: 0 20px; display: inline-flex; align-items: center; gap: 20px; }
+  @keyframes scrollX { to { transform: translateX(-50%); } }
+
+  /* ============ SECTIONS ============ */
+  .section { padding: 95px clamp(16px, 5vw, 60px); max-width: 1280px; margin: 0 auto; }
+  .sec-head { display: flex; align-items: center; gap: 24px; margin-bottom: 46px; flex-wrap: wrap; }
+  .sec-num { font-family: 'Archivo Black'; font-size: 1.5rem; background: var(--pink); border: var(--bd); box-shadow: 6px 6px 0 var(--ink); padding: 10px 18px; transform: rotate(-4deg); }
+  .n-cyan { background: var(--cyan); } .n-yellow { background: var(--yellow); } .n-purple { background: var(--purple); }
+  .n-green { background: var(--green); } .n-orange { background: var(--orange); } .n-blue { background: var(--blue); }
+  .sec-head h2 { font-size: clamp(2rem, 5.5vw, 3.6rem); }
+  .lead-big { font-size: clamp(1.15rem, 2.3vw, 1.5rem); font-weight: 700; max-width: 950px; margin-bottom: 34px; }
+
+  .card { background: var(--paper); border: var(--bd); box-shadow: var(--sh); padding: 30px; transition: transform .18s, box-shadow .18s; }
+  .card.lift:hover { transform: translate(-4px,-4px); box-shadow: 11px 11px 0 var(--ink); }
+  .card h3 { font-size: 1.25rem; margin-bottom: 12px; }
+  .card p { color: var(--muted); }
+  .card p strong { color: var(--ink); }
+
+  .grid { display: grid; gap: 28px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 1000px) { .g3 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 700px) { .g2, .g3 { grid-template-columns: 1fr; } }
+
+  .icon-sq { width: 52px; height: 52px; border: var(--bd); display: grid; place-items: center; font-size: 1.5rem; margin-bottom: 16px; box-shadow: 4px 4px 0 var(--ink); }
+  .i-yellow { background: var(--yellow); } .i-cyan { background: var(--cyan); } .i-pink { background: var(--pink); }
+  .i-purple { background: var(--purple); } .i-green { background: var(--green); } .i-orange { background: var(--orange); }
+  .i-red { background: var(--red); } .i-blue { background: var(--blue); }
+
+  .jobs { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 34px; }
+  .job { display: flex; align-items: center; gap: 12px; background: var(--paper); border: var(--bd); box-shadow: 5px 5px 0 var(--ink); padding: 13px 20px; font-weight: 700; font-size: 1rem; }
+  .job .ico { width: 40px; height: 40px; border: 2.5px solid var(--ink); display: grid; place-items: center; font-size: 1.2rem; flex: 0 0 auto; }
+
+  .img-card { padding: 22px; }
+  .img-card img { border: var(--bd); }
+  .img-card figcaption { margin-top: 14px; font-weight: 700; font-size: .95rem; color: var(--muted); }
+
+  .callout { border: var(--bd); box-shadow: var(--sh); padding: 30px; font-weight: 700; }
+  .co-pink { background: var(--pink); } .co-green { background: var(--green); } .co-purple { background: var(--purple); } .co-yellow { background: var(--yellow); }
+  .callout .big { font-family: 'Archivo Black'; text-transform: uppercase; font-size: clamp(1.05rem, 2.2vw, 1.45rem); line-height: 1.4; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+
+  .why-card { position: relative; padding-top: 64px; }
+  .why-num { position: absolute; top: -26px; left: 22px; font-family: 'Archivo Black'; font-size: 2.2rem; background: var(--ink); color: var(--yellow); border: var(--bd); padding: 8px 16px; box-shadow: 4px 4px 0 rgba(27,24,32,.3); }
+
+  .flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 16px; align-items: stretch; margin-top: 40px; }
+  .flow-arrow { align-self: center; font-family: 'Archivo Black'; font-size: 1.8rem; background: var(--ink); color: var(--bg); width: 58px; height: 58px; display: grid; place-items: center; border: var(--bd); }
+  .stage-tag { display: inline-block; font-family: 'Space Mono', monospace; font-weight: 700; font-size: .75rem; text-transform: uppercase; letter-spacing: 2px; border: 2.5px solid var(--ink); padding: 4px 10px; margin-bottom: 14px; box-shadow: 3px 3px 0 var(--ink); background: var(--paper); }
+  @media (max-width: 950px) {
+    .flow { grid-template-columns: 1fr; }
+    .flow-arrow { transform: rotate(90deg); margin: 2px auto; }
+  }
+
+  .q-card { display: flex; gap: 20px; align-items: flex-start; }
+  .q-num { font-family: 'Archivo Black'; font-size: 1.1rem; line-height: 1; flex: 0 0 auto; background: var(--cyan); border: var(--bd); box-shadow: 4px 4px 0 var(--ink); padding: 10px 12px; }
+  .q-card .q { font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+  .grid .q-card:nth-child(4n+2) .q-num { background: var(--pink); }
+  .grid .q-card:nth-child(4n+3) .q-num { background: var(--yellow); }
+  .grid .q-card:nth-child(4n+4) .q-num { background: var(--green); }
+
+  .refs { list-style: none; }
+  .refs li { margin: 14px 0; color: var(--muted); font-size: .98rem; }
+  .refs a { color: var(--ink); font-weight: 700; text-decoration: underline; text-decoration-color: var(--pink); text-decoration-thickness: 3px; overflow-wrap: anywhere; }
+
+  .thanks { text-align: center; padding: 40px 0 10px; }
+  .thanks-title { font-size: clamp(3rem, 10vw, 7.5rem); text-shadow: 6px 6px 0 var(--pink), 12px 12px 0 var(--cyan); margin-bottom: 30px; }
+  .thanks .presenters { justify-content: center; }
+
+  footer { border-top: var(--bd); background: var(--paper); padding: 34px 20px; text-align: center; }
+  footer p { font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: .85rem; color: var(--muted); }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 960px) {
+    .hero { grid-template-columns: 1fr; padding-top: 120px; }
+    .hero-art { max-width: 520px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <a class="logo" href="#top"><span class="dot"></span>V1 // C++ GODOT</a>
+  <button class="burger" id="navToggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navPanel">
+    <span class="bars"><span></span><span></span><span></span></span>
+  </button>
+  <div class="progress" id="progressBar"></div>
+</header>
+
+<nav class="nav-panel" id="navPanel" aria-label="Presentation sections">
+  <div class="nav-grid">
+    <a class="menu-link" href="#overview"><span class="num">01</span>Case Overview</a>
+    <a class="menu-link" href="#background"><span class="num">02</span>Background</a>
+    <a class="menu-link" href="#problem"><span class="num">03</span>Problem / Requirement</a>
+    <a class="menu-link" href="#why"><span class="num">04</span>Why C++ Was Chosen</a>
+    <a class="menu-link" href="#strengths"><span class="num">05</span>Strengths Observed</a>
+    <a class="menu-link" href="#risks"><span class="num">06</span>Risks Observed</a>
+    <a class="menu-link" href="#questions"><span class="num">07</span>Guide Questions</a>
+    <a class="menu-link" href="#terrain"><span class="num">08</span>Terrain Decision</a>
+    <a class="menu-link" href="#conclusion"><span class="num">09</span>Conclusion + Refs</a>
+  </div>
+  <p class="nav-note">Group 1-C • BSIT-T294 • Sir. Clifford Baguio • menu auto-closes when you pick a section ✌</p>
+</nav>
+<div class="backdrop" id="navBackdrop"></div>
+
+<section class="hero" id="top">
+  <svg class="star s1" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 0 L61 35 L98 35 L68 57 L79 92 L50 70 L21 92 L32 57 L2 35 L39 35 Z" fill="#FFD02F" stroke="#1B1820" stroke-width="6"/></svg>
+  <svg class="star s2" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 0 L61 35 L98 35 L68 57 L79 92 L50 70 L21 92 L32 57 L2 35 L39 35 Z" fill="#FF90E8" stroke="#1B1820" stroke-width="6"/></svg>
+
+  <div>
+    <span class="kicker reveal">C++ Case Study Analysis • BSIT-T294</span>
+    <h1 class="reveal">C++:<br><span class="title-sticker">Godot Engine</span></h1>
+    <p class="lead reveal">Case Study: <strong>Godot Engine — Building a Cross-Platform Game Engine in C++.</strong> A layered system in which the engine handles performance-sensitive infrastructure and creators work through more productive abstractions.</p>
+    <div class="reveal">
+      <span class="label">Presented by</span>
+      <div class="presenters">
+        <span class="ptag">Val Ian T. Dandasan</span>
+        <span class="ptag">Jessie James Bote</span>
+        <span class="ptag">Justin Mattew Jamero</span>
+        <span class="ptag">Stephen Clark Acao</span>
+        <span class="ptag">Jossie Pepito</span>
+        <span class="ptag">Nashon Shem Santua</span>
+      </div>
+    </div>
+    <div class="meta-row reveal">
+      <span class="chip c-yellow"><strong>Language:</strong>&nbsp;C++</span>
+      <span class="chip c-cyan"><strong>System:</strong>&nbsp;Godot Engine</span>
+      <span class="chip c-purple"><strong>Org:</strong>&nbsp;Godot Foundation + Community</span>
+      <span class="chip c-pink"><strong>Instructor:</strong>&nbsp;Sir. Clifford Baguio</span>
+      <span class="chip c-green"><strong>Submitted:</strong>&nbsp;August 20, 2026</span>
+    </div>
+  </div>
+
+  <div class="hero-art reveal">
+    <img src="https://image.qwenlm.ai/public_source/f94e5575-5c1d-452f-9e61-146d145fda52/1a2695fbb-d4b6-431b-9462-ea7436235680.png" alt="Neo-brutalist robot mascot surrounded by game development stickers">
+    <span class="badge b1">Free &amp; Open Source</span>
+    <span class="badge b2">60 FPS or bust</span>
+  </div>
+</section>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <div class="marquee-group">
+      <span>Free &amp; Open-Source ★</span><span>2D &amp; 3D ★</span><span>Cross-Platform ★</span><span>Native C++ Core ★</span><span>GDScript ★</span><span>GDExtension ★</span><span>Real-Time Graphics ★</span>
+    </div>
+    <div class="marquee-group">
+      <span>Free &amp; Open-Source ★</span><span>2D &amp; 3D ★</span><span>Cross-Platform ★</span><span>Native C++ Core ★</span><span>GDScript ★</span><span>GDExtension ★</span><span>Real-Time Graphics ★</span>
+    </div>
+  </div>
+</div>
+
+<section class="section" id="overview">
+  <div class="sec-head reveal"><span class="sec-num">01</span><h2>Case Overview</h2></div>
+  <div class="grid g2">
+    <div class="card lift reveal">
+      <h3>What is Godot?</h3>
+      <p style="margin-bottom:14px;">Godot is a <strong>free and open-source 2D and 3D game engine</strong> maintained by the Godot Foundation and its community.</p>
+      <p style="margin-bottom:14px;">The <strong>core engine is primarily native C++</strong>, while game developers can use higher-level scripting and extension interfaces.</p>
+      <p>This creates a <strong>layered system</strong> in which the engine handles performance-sensitive infrastructure and creators work through more productive abstractions.</p>
+    </div>
+    <figure class="card img-card reveal">
+      <img src="https://image.qwenlm.ai/public_source/f94e5575-5c1d-452f-9e61-146d145fda52/158ce74ae-db61-408c-8e6f-55725d91a271.png" alt="Layered architecture illustration: three stacked blocks connected by arrows" loading="lazy">
+      <figcaption>The layered system — native C++ core ↔ servers ↔ scripting &amp; extension layers.</figcaption>
+    </figure>
+  </div>
+  <div class="card reveal" style="margin-top:28px;">
+    <span class="label">Sources consulted</span>
+    <div class="chips">
+      <span class="chip c-cyan">Godot official website</span>
+      <span class="chip c-yellow">Engine architecture docs</span>
+      <span class="chip c-pink">Optimization using Servers docs</span>
+      <span class="chip c-purple">C++ (godot-cpp) docs</span>
+      <span class="chip c-green">Official Godot GitHub repository</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="background">
+  <div class="sec-head reveal"><span class="sec-num n-cyan">02</span><h2>Background</h2></div>
+  <p class="lead-big reveal">Godot must do all of the following <strong>within strict timing limits</strong> — a single slow operation can break the frame budget:</p>
+  <div class="jobs reveal">
+    <span class="job"><span class="ico i-cyan">🎬</span>Update scenes</span>
+    <span class="job"><span class="ico i-pink">🕹️</span>Process input</span>
+    <span class="job"><span class="ico i-yellow">🧲</span>Simulate physics</span>
+    <span class="job"><span class="ico i-purple">🔊</span>Mix audio</span>
+    <span class="job"><span class="ico i-orange">🖼️</span>Render frames</span>
+    <span class="job"><span class="ico i-green">📦</span>Manage resources</span>
+    <span class="job"><span class="ico i-blue">🎨</span>Graphics APIs</span>
+    <span class="job"><span class="ico i-red">💻</span>OS APIs</span>
+  </div>
+  <div class="grid g2">
+    <div class="card lift reveal">
+      <div class="icon-sq i-red">⏱️</div>
+      <h3>Visible frame delays</h3>
+      <p>A long-running operation or poor memory behavior can cause <strong>visible frame delays</strong> — players feel it instantly as lag or stutter.</p>
+    </div>
+    <div class="card lift reveal">
+      <div class="icon-sq i-orange">🌍</div>
+      <h3>Expensive portability</h3>
+      <p>Platform-specific code can make <strong>portability and maintenance expensive</strong> across platforms with different processors, graphics, file systems, and windowing systems.</p>
+    </div>
+    <div class="card lift reveal" style="grid-column:1/-1;">
+      <div class="icon-sq i-purple">🎮</div>
+      <h3>Triple-A demands</h3>
+      <p>When creating triple-A games, developers need to <strong>optimize and customize the code themselves</strong> to create graphically demanding games.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="problem">
+  <div class="sec-head reveal"><span class="sec-num n-yellow">03</span><h2>Problem / Requirement</h2></div>
+  <p class="lead-big reveal">C++ was selected because Godot needs <strong>native performance and predictable timing</strong> for real-time engine services.</p>
+  <span class="label reveal">C++ provides direct access to…</span>
+  <div class="grid g3 reveal" style="margin-bottom:30px;">
+    <div class="card lift"><div class="icon-sq i-pink">🧠</div><h3>Memory</h3><p>Exact control over allocation, lifetime, and data layout.</p></div>
+    <div class="card lift"><div class="icon-sq i-yellow">⚡</div><h3>Processor instructions</h3><p>Native machine code — no separate virtual machine overhead.</p></div>
+    <div class="card lift"><div class="icon-sq i-cyan">🖥️</div><h3>OS APIs</h3><p>First-class access to operating-system services.</p></div>
+    <div class="card lift"><div class="icon-sq i-purple">🎨</div><h3>Graphics libraries</h3><p>Seamless work with Vulkan, OpenGL, DirectX &amp; friends.</p></div>
+    <div class="card lift"><div class="icon-sq i-green">📚</div><h3>Mature C / C++ code</h3><p>Decades of battle-tested libraries, ready to reuse.</p></div>
+  </div>
+  <div class="callout co-pink reveal" style="margin-bottom:24px;">
+    <p class="big">The trade-off: developers must manage lifetime, ownership, concurrency, and undefined-behavior risks carefully.</p>
+    <div class="chips"><span class="chip">Lifetime</span><span class="chip">Ownership</span><span class="chip">Concurrency</span><span class="chip">Undefined behavior</span></div>
+  </div>
+  <div class="callout co-green reveal">
+    <p class="big">Godot reduces this burden by exposing scripting and extension layers for higher-level game logic. ✅</p>
+  </div>
+</section>
+
+<section class="section" id="why">
+  <div class="sec-head reveal"><span class="sec-num n-purple">04</span><h2>Why C++ Was Chosen</h2></div>
+  <p class="lead-big reveal">"C++ works especially well for the parts of Godot that must run <strong>repeatedly and predictably</strong>."</p>
+  <div class="grid g3 reveal">
+    <div class="card lift why-card" style="background:var(--yellow);">
+      <span class="why-num">01</span>
+      <h3>Native machine code</h3>
+      <p>It can produce native machine code — fast, predictable execution for real-time engine services.</p>
+    </div>
+    <div class="card lift why-card" style="background:var(--cyan);">
+      <span class="why-num">02</span>
+      <h3>Existing libraries</h3>
+      <p>It can use existing C and C++ libraries — a huge ecosystem of mature, high-performance code.</p>
+    </div>
+    <div class="card lift why-card" style="background:var(--pink);">
+      <span class="why-num">03</span>
+      <h3>Memory &amp; data layout</h3>
+      <p>It provides detailed control over memory and data layout — critical under strict frame budgets.</p>
+    </div>
+  </div>
+  <div class="card lift reveal" style="margin-top:40px;">
+    <h3>Organizing a large codebase</h3>
+    <p>Classes, templates, compile-time checks, and resource-management patterns help organize a large codebase.</p>
+  </div>
+</section>
+
+<section class="section" id="strengths">
+  <div class="sec-head reveal"><span class="sec-num n-green">05</span><h2>Strengths Observed</h2></div>
+  <div class="card lift reveal" style="margin-bottom:28px;">
+    <p style="font-size:1.1rem;">C++ works especially well for the parts of Godot that must run <strong>repeatedly and predictably</strong>, including rendering, physics, audio, resource loading, asset processing, and platform or graphics-API integration. The case also shows that C++ can support a large architecture when it is organized into <strong>core services, servers, platform drivers, editor systems, and extension boundaries</strong>.</p>
+  </div>
+  <div class="grid g3 reveal">
+    <div class="card lift"><div class="icon-sq i-yellow">⚡</div><h3>Repeats predictably</h3><p>Rendering, physics, audio, and resource loading run fast frame after frame.</p></div>
+    <div class="card lift"><div class="icon-sq i-cyan">🧱</div><h3>Native + libraries</h3><p>Native machine code plus mature C and C++ libraries.</p></div>
+    <div class="card lift"><div class="icon-sq i-pink">🧠</div><h3>Detailed control</h3><p>Control over memory and data layout, organized into servers, drivers, and extension boundaries.</p></div>
+  </div>
+</section>
+
+<section class="section" id="risks">
+  <div class="sec-head reveal"><span class="sec-num n-orange">06</span><h2>Risks Observed</h2></div>
+  <p class="lead-big reveal">C++ gives developers <strong>powerful control</strong> — but that control also introduces risks that require <strong>careful management</strong>.</p>
+  <div class="grid g3 reveal">
+    <div class="card lift"><div class="icon-sq i-red">💥</div><h3>Memory &amp; runtime errors</h3><p>Invalid pointers and lifetime mistakes can lead to crashes or unpredictable results.</p><div class="chips"><span class="chip c-red">High severity</span></div></div>
+    <div class="card lift"><div class="icon-sq i-orange">🌀</div><h3>Concurrency risks</h3><p>Data races can produce incorrect results that are difficult to reproduce.</p><div class="chips"><span class="chip c-red">High severity</span></div></div>
+    <div class="card lift"><div class="icon-sq i-purple">🧩</div><h3>Platform complexity</h3><p>Native builds and platform ports require specialized knowledge.</p><div class="chips"><span class="chip c-orange">Medium</span></div></div>
+    <div class="card lift"><div class="icon-sq i-cyan">🔌</div><h3>Compatibility issues</h3><p>Changes to APIs, serialization, or extensions can break existing projects.</p><div class="chips"><span class="chip c-orange">Medium</span></div></div>
+    <div class="card lift"><div class="icon-sq i-pink">🐛</div><h3>Core defects</h3><p>A bug in Godot's core code can affect many projects using the engine.</p><div class="chips"><span class="chip c-red">High severity</span></div></div>
+    <div class="card lift"><div class="icon-sq i-yellow">🛠️</div><h3>High maintenance</h3><p>Testing, code reviews, profiling, documentation, and careful ownership are needed to prevent and manage these problems.</p><div class="chips"><span class="chip c-orange">Ongoing cost</span></div></div>
+  </div>
+</section>
+
+<section class="section" id="questions">
+  <div class="sec-head reveal"><span class="sec-num n-blue">07</span><h2>Guide Questions</h2></div>
+  <div class="grid g2 reveal">
+    <div class="card lift q-card">
+      <span class="q-num">Q1</span>
+      <div><p class="q">Which game-engine responsibilities benefit most from C++ performance and low-level control?</p>
+      <p>From our analysis, <strong>rendering benefits the most</strong> because it happens continuously while the game is running — the engine prepares images, sends information to the graphics API, manages objects, and keeps the frame rate stable. <strong>Physics</strong> is another major area because the engine may calculate collisions and movement for many objects in every frame. Audio processing, resource loading, and asset importing also benefit from native execution. If these operations are slow, the player notices immediately through lag, stuttering, or delayed controls.</p></div>
+    </div>
+    <div class="card lift q-card">
+      <span class="q-num">Q2</span>
+      <div><p class="q">How does Godot's layered architecture separate native engine services from game-specific scripting?</p>
+      <p>Godot places the <strong>low-level engine services underneath the scene system</strong>. The scene system uses nodes and resources because those concepts are easier for game developers to understand and organize. Underneath those nodes are services such as rendering, physics, and audio servers. A developer can work with a node without manually controlling every graphics or physics operation — and when more performance is needed, the project can use lower-level server APIs. Beginners get a simple workflow while experienced developers can still reach the native systems when necessary.</p></div>
+    </div>
+    <div class="card lift q-card">
+      <span class="q-num">Q3</span>
+      <div><p class="q">What technical and organizational risks arise when a large cross-platform engine is maintained in C++?</p>
+      <p>The biggest technical risk is that a <strong>small memory or pointer mistake can cause a crash</strong> or unpredictable behavior. C++ gives developers control over object lifetime and memory, but that means they have to use that control correctly. <strong>Data races</strong> are another concern when several parts of the engine work at the same time. Cross-platform development adds difficulty because code may behave differently on different operating systems, processors, or graphics APIs — so the team needs automated tests and real testing on different platforms.</p></div>
+    </div>
+    <div class="card lift q-card">
+      <span class="q-num">Q4</span>
+      <div><p class="q">Should the terrain system be a built-in module, a GDExtension, or a script prototype?</p>
+      <p>We recommend a <strong>staged approach</strong>: first build a small script-based prototype to test the terrain algorithm and game-design requirements; next profile it with representative maps and measure generation time, frame time, memory use, and stutter; then move only the proven hot path into a <strong>C++ GDExtension with a narrow interface</strong>. A GDExtension is the best initial native option because it adds C++ without rebuilding the entire engine and is easier to isolate, test, and deploy. A built-in C++ module should be chosen only if the terrain system becomes an engine-wide capability needing deep access to core servers. Full breakdown in section 08 ↓</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="terrain">
+  <div class="sec-head reveal"><span class="sec-num n-purple">08</span><h2>The Terrain Decision</h2></div>
+  <div class="callout co-purple reveal" style="margin-bottom:10px;">
+    <p class="big">Case question: built-in module, GDExtension, or script prototype? Our answer: a staged, evidence-based approach.</p>
+  </div>
+  <div class="flow reveal">
+    <div class="card lift" style="background:var(--green);">
+      <span class="stage-tag">Stage 1 — Start here</span>
+      <h3>Script prototype + profiling</h3>
+      <p>Build a small script-based prototype to test the terrain algorithm and design requirements. Profile it with representative maps: measure generation time, frame time, memory use, and stutter.</p>
+    </div>
+    <div class="flow-arrow" aria-hidden="true">→</div>
+    <div class="card lift" style="background:var(--yellow);">
+      <span class="stage-tag">Stage 2 — Optimize</span>
+      <h3>C++ GDExtension</h3>
+      <p>Move only the proven hot path into a C++ GDExtension with a narrow interface — adds C++ without rebuilding the entire engine; easier to isolate, test, and deploy.</p>
+    </div>
+    <div class="flow-arrow" aria-hidden="true">→</div>
+    <div class="card lift" style="background:var(--pink);">
+      <span class="stage-tag">Stage 3 — Last resort</span>
+      <h3>Built-in module</h3>
+      <p>Choose a built-in C++ module only if the terrain system becomes an engine-wide capability needing deep access to core servers, custom resource handling, or tighter integration.</p>
+    </div>
+  </div>
+  <div class="callout co-yellow reveal" style="margin-top:36px;">
+    <p class="big">This staged plan balances performance, development speed, portability, testing, deployment, and rollback. 🎯</p>
+  </div>
+</section>
+
+<section class="section" id="conclusion">
+  <div class="sec-head reveal"><span class="sec-num n-cyan">09</span><h2>Conclusion + References</h2></div>
+  <div class="callout co-yellow reveal" style="margin-bottom:40px;">
+    <p style="font-size:clamp(1.05rem,2vw,1.3rem); font-weight:500;">Overall, the Godot case shows why <strong>C++ remains valuable for the performance-critical core</strong> of a cross-platform game engine. Its native execution, low-level control, and interoperability support rendering, physics, audio, resource management, and platform integration under strict timing requirements. However, C++ also increases the cost of <strong>memory management, debugging, portability work, and long-term maintenance</strong>. Our recommendation: keep engine-wide responsibilities in the native core while using scripting and GDExtension to reduce unnecessary complexity for game-specific work.</p>
+  </div>
+  <div class="card reveal" style="margin-bottom:30px;">
+    <span class="label">References (APA)</span>
+    <ul class="refs">
+      <li>Godot Engine. (n.d.). <em>Engine architecture</em>. Godot documentation. <a href="https://docs.godotengine.org/en/stable/engine_details/architecture/index.html" target="_blank" rel="noopener">docs.godotengine.org/…/architecture</a></li>
+      <li>Godot Engine. (n.d.). <em>Optimization using Servers</em>. Godot documentation. <a href="https://docs.godotengine.org/en/stable/tutorials/performance/using_servers.html" target="_blank" rel="noopener">docs.godotengine.org/…/using_servers</a></li>
+      <li>Godot Engine. (n.d.). <em>C++ (godot-cpp)</em>. Godot documentation. <a href="https://docs.godotengine.org/en/latest/tutorials/scripting/cpp/index.html" target="_blank" rel="noopener">docs.godotengine.org/…/cpp</a></li>
+      <li>Godot Engine. (n.d.). <em>Godot Engine</em>. <a href="https://godotengine.org/" target="_blank" rel="noopener">godotengine.org</a></li>
+      <li>Godot Engine. (n.d.). <em>Godot Engine source repository</em>. GitHub. <a href="https://github.com/godotengine/godot" target="_blank" rel="noopener">github.com/godotengine/godot</a></li>
+    </ul>
+  </div>
+  <div class="thanks reveal">
+    <h2 class="thanks-title">Thank you!</h2>
+    <div class="presenters">
+      <span class="ptag">Val Ian T. Dandasan</span>
+      <span class="ptag">Jessie James Bote</span>
+      <span class="ptag">Justin Mattew Jamero</span>
+      <span class="ptag">Stephen Clark Acao</span>
+      <span class="ptag">Jossie Pepito</span>
+      <span class="ptag">Nashon Shem Santua</span>
+    </div>
+    <p style="margin-top:30px;"><a class="chip c-cyan" href="../v2/"><strong>Open V2 — Full Worksheet Edition →</strong></a></p>
+  </div>
+</section>
+
+<div class="marquee m-pink" aria-hidden="true">
+  <div class="marquee-track">
+    <div class="marquee-group"><span>Thank you ★</span><span>Group 1-C ★</span><span>BSIT-T294 ★</span><span>C++ × Godot ★</span></div>
+    <div class="marquee-group"><span>Thank you ★</span><span>Group 1-C ★</span><span>BSIT-T294 ★</span><span>C++ × Godot ★</span></div>
+  </div>
+</div>
+<footer>
+  <p>C++ : Godot Engine — Case Analysis • Group 1-C • BSIT-T294 • 2026</p>
+  <p style="margin-top:8px;">Instructor: Sir. Clifford Baguio • Submitted: August 20, 2026</p>
+</footer>
+
+<script>
+(function () {
+  var topbar = document.getElementById('topbar');
+  var progressBar = document.getElementById('progressBar');
+  var navToggle = document.getElementById('navToggle');
+  var navPanel = document.getElementById('navPanel');
+  var navBackdrop = document.getElementById('navBackdrop');
+  var menuLinks = Array.prototype.slice.call(document.querySelectorAll('.menu-link'));
+  var navOpen = false;
+  var lastScrollY = window.scrollY;
+
+  function openNav() {
+    navOpen = true;
+    navPanel.classList.add('open');
+    navToggle.classList.add('open');
+    navBackdrop.classList.add('show');
+    navToggle.setAttribute('aria-expanded', 'true');
+    topbar.classList.remove('hide');
+  }
+  function closeNav() {
+    navOpen = false;
+    navPanel.classList.remove('open');
+    navToggle.classList.remove('open');
+    navBackdrop.classList.remove('show');
+    navToggle.setAttribute('aria-expanded', 'false');
+  }
+  function toggleNav() { navOpen ? closeNav() : openNav(); }
+
+  navToggle.addEventListener('click', toggleNav);
+  navBackdrop.addEventListener('click', closeNav);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeNav(); });
+  menuLinks.forEach(function (link) { link.addEventListener('click', closeNav); });
+
+  window.addEventListener('scroll', function () {
+    var y = window.scrollY;
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    progressBar.style.width = (max > 0 ? (y / max) * 100 : 0) + '%';
+    if (navOpen && y > 140) { closeNav(); }
+    else if (!navOpen) {
+      if (y > lastScrollY && y > 260) topbar.classList.add('hide');
+      else topbar.classList.remove('hide');
+    }
+    lastScrollY = y;
+  }, { passive: true });
+
+  var revealObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) { entry.target.classList.add('in'); revealObserver.unobserve(entry.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(function (el) { revealObserver.observe(el); });
+
+  var spyObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        var id = entry.target.id;
+        menuLinks.forEach(function (link) {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  menuLinks.forEach(function (link) {
+    var target = document.getElementById(link.getAttribute('href').slice(1));
+    if (target) spyObserver.observe(target);
+  });
+})();
+</script>
+</body>
+</html>
