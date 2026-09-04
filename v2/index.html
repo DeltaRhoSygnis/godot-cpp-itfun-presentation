@@ -163,6 +163,9 @@
 
   @media (max-width: 960px) { .hero { grid-template-columns: 1fr; padding-top: 120px; } .hero-art { max-width: 520px; } }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } .reveal { opacity: 1; transform: none; } }
+  .flow { display: grid; grid-template-columns: 1fr; }
+.flow > .card { flex: none; min-width: 0; max-width: 100%; }
+.flow-arrow { transform: rotate(90deg); margin: 4px auto; }
 </style>
 </head>
 <body>
